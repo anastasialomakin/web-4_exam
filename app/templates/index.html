@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Главная страница - Список оборудования{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Список оборудования</h1>
+
+    <!-- TODO: Добавить сюда форму для фильтрации -->
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Название</th>
+                <th>Инвентарный номер</th>
+                <th>Категория</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in equipment_list %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.inventory_number }}</td>
+                <td>{{ item.category.name }}</td>
+                <td>{{ item.status }}</td>
+                <td>
+                    <!-- TODO: Добавить кнопки в зависимости от роли -->
+                    <a href="#" class="btn btn-sm btn-info">Просмотр</a>
+                    
+                    {% if current_user.is_authenticated and current_user.is_admin() %}
+                        <a href="#" class="btn btn-sm btn-warning">Редакт.</a>
+                        <a href="#" class="btn btn-sm btn-danger">Удалить</a>
+                    {% endif %}
+                    
+                    {% if current_user.is_authenticated and (current_user.is_admin() or current_user.is_tech()) %}
+                         <a href="#" class="btn btn-sm btn-success">Обслужить</a>
+                    {% endif %}
+
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Оборудование не найдено.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- TODO: Добавить сюда пагинацию -->
+
+{% endblock %}

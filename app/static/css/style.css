@@ -1,0 +1,28 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+header .navbar {
+    background-color: #ffc107; 
+}
+
+header .navbar a.nav-link {
+    color: #6d4c41; 
+}
+
+header .navbar a.nav-link:hover {
+    color: #4e342e;
+}
+
+footer {
+    background-color: #c8c8c8; 
+    padding: 20px 0;
+    margin-top: 40px; 
+    color: #535b62; 
+}

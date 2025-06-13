@@ -1,10 +1,7 @@
-import re
-from flask import Flask, render_template, request, make_response, redirect, url_for
+from app import create_app
 
-app = Flask(__name__)
+app = create_app()
 application = app
 
-
-
 if __name__ == '__main__':
-    app.run (debug = True)
+    app.run(debug=True)
