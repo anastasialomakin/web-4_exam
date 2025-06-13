@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Детали: {{ equipment.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+
+        <img src="https://via.placeholder.com/300x300.png?text=Нет+фото" class="img-fluid rounded" alt="Фото оборудования">
+    </div>
+
+    <div class="col-md-8">
+        <h1>{{ equipment.name }}</h1>
+        <p class="text-muted">Инвентарный номер: {{ equipment.inventory_number }}</p>
+
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Категория:</strong> {{ equipment.category.name }}</li>
+            <li class="list-group-item"><strong>Статус:</strong> {{ equipment.status }}</li>
+            <li class="list-group-item"><strong>Дата покупки:</strong> {{ equipment.purchase_date.strftime('%d.%m.%Y') }}</li>
+            <li class="list-group-item"><strong>Стоимость:</strong> {{ "%.2f"|format(equipment.cost) }} руб.</li>
+            {% if equipment.notes %}
+            <li class="list-group-item"><strong>Примечание:</strong> {{ equipment.notes }}</li>
+            {% endif %}
+        </ul>
+
+        <h4 class="mt-4">Ответственные лица:</h4>
+        {% if equipment.responsible_persons %}
+            <ul>
+            {% for person in equipment.responsible_persons %}
+                <li>{{ person.full_name }} ({{ person.position }})</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>Не назначены.</p>
+        {% endif %}
+    </div>
+</div>
+
+<hr>
+
+<div class="row mt-4">
+    <div class="col">
+        <h3>История обслуживания</h3>
+
+        {% if history %}
+        <table class="table table-sm mt-3">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Тип обслуживания</th>
+                    <th>Комментарий</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in history %}
+                <tr>
+                    <td>{{ record.service_date.strftime('%d.%m.%Y') }}</td>
+                    <td>{{ record.service_type }}</td>
+                    <td>{{ record.notes }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Записей об обслуживании нет.</p>
+        {% endif %}
+    </div>
+</div>
+
+<a href="{{ url_for('main.index') }}" class="btn btn-secondary mt-3">Назад к списку</a>
+
+{% endblock %}
