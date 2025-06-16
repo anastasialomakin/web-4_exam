@@ -1,11 +1,13 @@
 from app.models import Equipment, User, ServiceHistory, Category, Image
-from flask import render_template, Blueprint, redirect, url_for, flash, request, abort, current_app, send_from_directory
+from flask import render_template, Blueprint, redirect, url_for, flash, request, abort, current_app, send_from_directory, Response
 from flask_login import current_user, login_user, logout_user, login_required
 from app.forms import LoginForm, EquipmentForm, ServiceForm
 from functools import wraps
 from app import db 
 from werkzeug.utils import secure_filename
 import os
+import io
+import csv
 import hashlib
 
 bp = Blueprint('main', __name__)
@@ -311,3 +313,39 @@ def delete_service_record(id):
     db.session.commit()
     flash('Запись об обслуживании удалена.', 'success')
     return redirect(url_for('main.service_list'))
+
+@bp.route('/export/csv')
+@login_required
+@admin_required
+def export_csv():
+    output = io.StringIO()
+    output.write('\ufeff')
+    writer = csv.writer(output)
+
+    headers = [
+        'Название', 'Инвентарный номер', 'Категория', 'Дата покупки', 
+        'Стоимость', 'Статус', 'Накопленная амортизация', 'Остаточная стоимость'
+    ]
+    writer.writerow(headers)
+
+    equipment_list = Equipment.query.order_by('name').all()
+    for item in equipment_list:
+        row = [
+            item.name,
+            item.inventory_number,
+            item.category.name,
+            item.purchase_date.strftime('%Y-%m-%d'),
+            str(item.cost), 
+            item.status,
+            str(item.accumulated_depreciation),
+            str(item.residual_value)
+        ]
+        writer.writerow(row)
+
+    output.seek(0)
+    
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=equipment_report.csv"}
+    )

@@ -3,12 +3,16 @@
 {% block title %}Главная страница - Список оборудования{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Список оборудования</h1>
-        {% if current_user.is_authenticated and current_user.is_admin() %}
-            <a href="{{ url_for('main.add_equipment') }}" class="btn btn-primary">Добавить оборудование</a>
-        {% endif %}
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Список оборудования</h1>
+    {% if current_user.is_authenticated and current_user.is_admin() %}
+        <div class="d-flex gap-2"> 
+            <a href="{{ url_for('main.export_csv') }}" class="btn btn-secondary" title="Экспорт в CSV"><i class="bi bi-download"></i></a>
+            <a href="{{ url_for('main.add_equipment') }}" class="btn btn-primary" title="Добавить оборудование"><i class="bi bi-plus-lg"></i></a>
+        </div>
+    {% endif %}
+</div>
+    
     <form method="GET" action="{{ url_for('main.index') }}" class="mb-4 p-3 border rounded bg-light">
         <div class="row g-3 align-items-end">
             <div class="col-md-3">
@@ -65,23 +69,18 @@
                 <td>{{ item.status }}</td>
                 <td>
 
-                    <a href="{{ url_for('main.equipment_detail', id=item.id) }}" class="btn btn-sm btn-info">Просмотр</a>
-                    
+                    <a href="{{ url_for('main.equipment_detail', id=item.id) }}" class="btn btn-sm btn-info" title="Просмотр"><i class="bi bi-eye-fill"></i></a>
+                    {% if current_user.is_authenticated and (current_user.is_admin() or current_user.is_tech()) %}
+                        <a href="{{ url_for('main.add_service_record', equipment_id=item.id) }}" class="btn btn-sm btn-success" title="Добавить запись об обслуживании"><i class="bi bi-tools"></i></a>
+                    {% endif %}
                     {% if current_user.is_authenticated and current_user.is_admin() %}
-                    <a href="{{ url_for('main.edit_equipment', id=item.id) }}" class="btn btn-sm btn-warning">Редакт.</a>
+                        <a href="{{ url_for('main.edit_equipment', id=item.id) }}" class="btn btn-sm btn-warning" title="Редактировать"><i class="bi bi-pencil-fill"></i></a>
                         <button type="button" class="btn btn-sm btn-danger" 
                         data-bs-toggle="modal" 
                         data-bs-target="#deleteModal"
                         data-equipment-name="{{ item.name }}"
-                        data-delete-url="{{ url_for('main.delete_equipment', id=item.id) }}">
-                            Удалить
-                        </button>
+                        data-delete-url="{{ url_for('main.delete_equipment', id=item.id) }}" title="Удалить запись"><i class="bi bi-trash-fill"></i></button>
                     {% endif %}
-                    
-                    {% if current_user.is_authenticated and (current_user.is_admin() or current_user.is_tech()) %}
-                        <a href="{{ url_for('main.add_service_record', equipment_id=item.id) }}" class="btn btn-sm btn-success">Обслужить</a>
-                    {% endif %}
-
                 </td>
             </tr>
             {% else %}

@@ -2,10 +2,13 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    background-color: #fdfdfd; 
 }
 
 main {
     flex: 1;
+    padding-top: 1.5rem; 
+    padding-bottom: 2rem; 
 }
 
 header .navbar {
@@ -14,6 +17,7 @@ header .navbar {
 
 header .navbar a.nav-link {
     color: #6d4c41; 
+    font-weight: 500;
 }
 
 header .navbar a.nav-link:hover {
@@ -21,8 +25,56 @@ header .navbar a.nav-link:hover {
 }
 
 footer {
-    background-color: #c8c8c8; 
+    background-color: #a3a6a9;
     padding: 20px 0;
-    margin-top: 40px; 
-    color: #535b62; 
+    margin-top: 40px;
+    color: #333d45;
+}
+
+.btn-primary {
+    --bs-btn-color: #4e342e !important; 
+    --bs-btn-bg: #ffc107 !important; 
+    --bs-btn-border-color: #ffc107 !important; 
+    --bs-btn-hover-color: #4e342e !important; 
+    --bs-btn-hover-bg: #e0a800 !important; 
+    --bs-btn-hover-border-color: #e0a800 !important;
+    --bs-btn-active-bg: #e0a800 !important;
+    --bs-btn-active-border-color: #c49400 !important;
+}
+
+.table .btn {
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0.2rem 0.4rem;
+    font-size: 1.2rem; 
+    vertical-align: middle;
+}
+
+.table .btn:focus {
+    box-shadow: none;
+}
+
+.table .btn-info i { color: #6c757d; }
+.table .btn-warning i { color: #ffc107; }
+.table .btn-danger i { color: #dc3545; }
+.table .btn-success i { color: #4e342e; }
+
+
+.page-link {
+    color: #6d4c41 !important;
+}
+.page-link:hover {
+    background-color: #fff3cd;
+    color: #4e342e;
+}
+.page-item.active .page-link {
+    background-color: #ffc107;
+    border-color: #e0a800;
+    color: #4e342e;
+}
+
+.table-dark > thead {
+    --bs-table-bg: #6d4c41 !important; 
+    color: white; 
+    vertical-align: middle;
 }

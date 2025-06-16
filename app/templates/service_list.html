@@ -24,16 +24,14 @@
                 <td>{{ record.service_date.strftime('%d.%m.%Y') }}</td>
                 <td>{{ record.service_type }}</td>
                 <td>
-                    <a href="{{ url_for('main.equipment_detail', id=record.equipment.id) }}" class="btn btn-sm btn-info">Просмотр</a>
-                    <a href="{{ url_for('main.edit_service_record', id=record.id) }}" class="btn btn-sm btn-warning">Редакт.</a>
+                    <a href="{{ url_for('main.equipment_detail', id=record.equipment.id) }}" class="btn btn-sm btn-info" title="Просмотр оборудования"><i class="bi bi-eye-fill"></i></a>
+                    <a href="{{ url_for('main.edit_service_record', id=record.id) }}" class="btn btn-sm btn-warning" title="Редактировать запись"><i class="bi bi-pencil-fill"></i></a>
 
                     <button type="button" class="btn btn-sm btn-danger" 
                             data-bs-toggle="modal" 
                             data-bs-target="#deleteModal"
                             data-equipment-name="запись об обслуживании от {{ record.service_date.strftime('%d.%m.%Y') }}"
-                            data-delete-url="{{ url_for('main.delete_service_record', id=record.id) }}">
-                        Удалить
-                    </button>
+                            data-delete-url="{{ url_for('main.delete_service_record', id=record.id) }}" title="Удалить запись"><i class="bi bi-trash-fill"></i></button>
                 </td>
             </tr>
             {% else %}

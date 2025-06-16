@@ -2,6 +2,7 @@ from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from datetime import date
+from dateutil.relativedelta import relativedelta
 
 @login.user_loader
 def load_user(id):
@@ -38,7 +39,7 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text)
-
+    useful_life = db.Column(db.Integer, nullable=False, default=36)
     equipment = db.relationship('Equipment', backref='category', lazy='dynamic')
 
     def __repr__(self):
@@ -80,8 +81,32 @@ class Equipment(db.Model):
 
     service_history = db.relationship('ServiceHistory', backref='equipment', lazy='dynamic', cascade="all, delete-orphan")
 
+    @property
+    def accumulated_depreciation(self):
+            """Расчёт накопленной амортизации."""
+            months_in_use = relativedelta(date.today(), self.purchase_date).years * 12 + \
+                            relativedelta(date.today(), self.purchase_date).months
+            
+            useful_life_months = self.category.useful_life
+            
+            if months_in_use >= useful_life_months:
+                return self.cost
+            
+            if useful_life_months == 0:
+                return 0
+                
+            monthly_depreciation = self.cost / useful_life_months
+            
+            return round(months_in_use * monthly_depreciation, 2)
+
+    @property
+    def residual_value(self):
+            """Расчёт остаточной стоимости."""
+            residual = self.cost - self.accumulated_depreciation
+            return round(max(0, residual), 2)
+
     def __repr__(self):
-        return f'<Equipment {self.name} ({self.inventory_number})>'
+            return f'<Equipment {self.name} ({self.inventory_number})>'
 
 class ServiceHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
