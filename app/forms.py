@@ -4,6 +4,7 @@ from wtforms.validators import DataRequired, Length, ValidationError
 from flask_wtf.file import FileField, FileAllowed 
 from wtforms_sqlalchemy.fields import QuerySelectMultipleField
 from wtforms.widgets import ListWidget, CheckboxInput
+from datetime import date
 
 from app.models import Equipment, ResponsiblePerson
 
@@ -53,3 +54,10 @@ class EquipmentForm(FlaskForm):
         equipment = Equipment.query.filter_by(inventory_number=inventory_number.data).first()
         if equipment:
             raise ValidationError('Оборудование с таким инвентарным номером уже существует.')
+        
+class ServiceForm(FlaskForm):
+    equipment = SelectField('Оборудование', coerce=int)
+    service_date = DateField('Дата обслуживания', format='%Y-%m-%d', validators=[DataRequired()], default=date.today)
+    service_type = StringField('Тип обслуживания', validators=[DataRequired(), Length(max=100)])
+    notes = TextAreaField('Комментарий', validators=[DataRequired()])
+    submit = SubmitField('Сохранить запись')

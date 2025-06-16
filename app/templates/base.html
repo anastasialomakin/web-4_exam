@@ -18,14 +18,12 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         {% if current_user.is_authenticated %}
                         <li class="nav-item">
-
                             <a class="nav-link" href="{{ url_for('main.index') }}">Оборудование</a>
                         </li>
                         {% endif %}
                         {% if current_user.is_authenticated and (current_user.is_admin() or current_user.is_tech()) %}
                         <li class="nav-item">
-
-                            <a class="nav-link" href="#">Обслуживание</a>
+                            <a class="nav-link" href="{{ url_for('main.service_list') }}">Обслуживание</a>
                         </li>
                         {% endif %}
                     </ul>

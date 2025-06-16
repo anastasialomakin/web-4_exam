@@ -45,6 +45,14 @@
     <div class="col">
         <h3>История обслуживания</h3>
 
+        {% if current_user.is_authenticated and (current_user.is_admin() or current_user.is_tech()) %}
+ 
+                <div class="card-body">
+                    <a href="{{ url_for('main.add_service_record', equipment_id=equipment.id) }}" class="btn btn-primary">Добавить запись об обслуживании</a>
+                </div>
+   
+        {% endif %}
+
         {% if history %}
         <table class="table table-sm mt-3">
             <thead>

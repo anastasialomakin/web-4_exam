@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from '_macros.html' import pagination_widget %}
+
+{% block title %}История обслуживания{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">История обслуживания</h1>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Оборудование</th>
+                <th>Инв. номер</th>
+                <th>Дата</th>
+                <th>Тип обслуживания</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in service_records %}
+            <tr>
+                <td>{{ record.equipment.name }}</td>
+                <td>{{ record.equipment.inventory_number }}</td>
+                <td>{{ record.service_date.strftime('%d.%m.%Y') }}</td>
+                <td>{{ record.service_type }}</td>
+                <td>
+                    <a href="{{ url_for('main.equipment_detail', id=record.equipment.id) }}" class="btn btn-sm btn-info">Просмотр</a>
+                    <a href="{{ url_for('main.edit_service_record', id=record.id) }}" class="btn btn-sm btn-warning">Редакт.</a>
+
+                    <button type="button" class="btn btn-sm btn-danger" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#deleteModal"
+                            data-equipment-name="запись об обслуживании от {{ record.service_date.strftime('%d.%m.%Y') }}"
+                            data-delete-url="{{ url_for('main.delete_service_record', id=record.id) }}">
+                        Удалить
+                    </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Записей об обслуживании не найдено.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ pagination_widget(pagination, 'main.service_list', url_args=url_args) }}
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Удаление записи</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Вы уверены, что хотите удалить <strong id="equipmentNameToDelete"></strong>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                    <form id="deleteForm" action="" method="POST" style="display: inline;">
+                        <input type="submit" class="btn btn-danger" value="Да">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var deleteModal = document.getElementById('deleteModal');
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var equipmentName = button.getAttribute('data-equipment-name');
+                var deleteUrl = button.getAttribute('data-delete-url');
+                var modalBodyName = deleteModal.querySelector('#equipmentNameToDelete');
+                var deleteForm = deleteModal.querySelector('#deleteForm');
+                modalBodyName.innerHTML = equipmentName;
+                deleteForm.action = deleteUrl;
+            });
+        });
+    </script>
+{% endblock %}

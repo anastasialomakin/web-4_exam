@@ -9,6 +9,43 @@
             <a href="{{ url_for('main.add_equipment') }}" class="btn btn-primary">Добавить оборудование</a>
         {% endif %}
     </div>
+    <form method="GET" action="{{ url_for('main.index') }}" class="mb-4 p-3 border rounded bg-light">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="category" class="form-label">Категория</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">Все категории</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if cat.id == request.args.get('category', '')|int %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Статус</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">Все статусы</option>
+                    {% for stat in statuses %}
+                        <option value="{{ stat }}" {% if stat == request.args.get('status') %}selected{% endif %}>
+                            {{ stat }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Дата покупки (диапазон)</label>
+                <div class="input-group">
+                    <input type="date" name="date_from" class="form-control" value="{{ request.args.get('date_from', '') }}">
+                    <span class="input-group-text">-</span>
+                    <input type="date" name="date_to" class="form-control" value="{{ request.args.get('date_to', '') }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Применить</button>
+            </div>
+        </div>
+    </form>
     <table class="table table-striped table-hover">
         <thead class="table-dark">
             <tr>
@@ -42,7 +79,7 @@
                     {% endif %}
                     
                     {% if current_user.is_authenticated and (current_user.is_admin() or current_user.is_tech()) %}
-                         <a href="#" class="btn btn-sm btn-success">Обслужить</a>
+                        <a href="{{ url_for('main.add_service_record', equipment_id=item.id) }}" class="btn btn-sm btn-success">Обслужить</a>
                     {% endif %}
 
                 </td>
@@ -54,6 +91,9 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% from '_macros.html' import pagination_widget %}
+    {{ pagination_widget(pagination, 'main.index', url_args=url_args) }}
 
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog">

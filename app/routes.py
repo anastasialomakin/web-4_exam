@@ -1,7 +1,7 @@
 from app.models import Equipment, User, ServiceHistory, Category, Image
 from flask import render_template, Blueprint, redirect, url_for, flash, request, abort, current_app, send_from_directory
 from flask_login import current_user, login_user, logout_user, login_required
-from app.forms import LoginForm, EquipmentForm
+from app.forms import LoginForm, EquipmentForm, ServiceForm
 from functools import wraps
 from app import db 
 from werkzeug.utils import secure_filename
@@ -19,11 +19,57 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def tech_or_admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not (current_user.is_admin() or current_user.is_tech()):
+            flash('У вас недостаточно прав для выполнения данного действия.', 'danger')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @bp.route('/')
 @bp.route('/index')
 def index():
-    all_equipment = Equipment.query.order_by(Equipment.purchase_date.desc()).all()
-    return render_template('index.html', title='Главная', equipment_list=all_equipment)
+    page = request.args.get('page', 1, type=int)
+    query = Equipment.query 
+
+    category_id = request.args.get('category', type=int)
+    if category_id:
+        query = query.filter(Equipment.category_id == category_id)
+
+    status = request.args.get('status')
+    if status:
+        query = query.filter(Equipment.status == status)
+
+    date_from = request.args.get('date_from')
+    if date_from:
+        query = query.filter(Equipment.purchase_date >= date_from)
+        
+    date_to = request.args.get('date_to')
+    if date_to:
+        query = query.filter(Equipment.purchase_date <= date_to)
+
+    query = query.order_by(Equipment.purchase_date.desc())
+    
+    pagination = query.paginate(page=page, per_page=10, error_out=False)
+    equipment_list = pagination.items
+    categories = Category.query.order_by('name').all()
+    statuses = Equipment.status.type.enums
+    
+    url_args = request.args.copy()
+    if 'page' in url_args:
+        url_args.pop('page')
+
+    return render_template(
+        'index.html', 
+        title='Главная', 
+        equipment_list=equipment_list, 
+        pagination=pagination,
+        categories=categories,
+        statuses=statuses,
+        url_args=url_args
+    )
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -196,3 +242,72 @@ def delete_equipment(id):
     db.session.commit()
     flash('Оборудование успешно удалено.', 'success')
     return redirect(url_for('main.index'))
+
+@bp.route('/service')
+@login_required
+@tech_or_admin_required
+def service_list():
+    page = request.args.get('page', 1, type=int)
+
+    query = ServiceHistory.query.order_by(ServiceHistory.service_date.desc())
+    pagination = query.paginate(page=page, per_page=10, error_out=False)
+    service_records = pagination.items
+    
+    url_args = request.args.copy()
+    if 'page' in url_args:
+        url_args.pop('page')
+        
+    return render_template('service_list.html', 
+                           title='История обслуживания', 
+                           service_records=service_records,
+                           pagination=pagination,
+                           url_args=url_args)
+
+@bp.route('/equipment/<int:equipment_id>/service/add', methods=['GET', 'POST'])
+@login_required
+@tech_or_admin_required
+def add_service_record(equipment_id):
+    equipment = Equipment.query.get_or_404(equipment_id)
+    form = ServiceForm()
+    del form.equipment 
+    if form.validate_on_submit():
+        new_record = ServiceHistory(
+            equipment_id=equipment.id,
+            service_date=form.service_date.data,
+            service_type=form.service_type.data,
+            notes=form.notes.data
+        )
+        db.session.add(new_record)
+        db.session.commit()
+        flash('Запись об обслуживании добавлена.', 'success')
+        return redirect(url_for('main.equipment_detail', id=equipment.id))
+        
+    return render_template('service_form.html', title='Добавить запись об обслуживании', form=form, equipment=equipment)
+
+@bp.route('/service/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+@tech_or_admin_required
+def edit_service_record(id):
+    record = ServiceHistory.query.get_or_404(id)
+    form = ServiceForm(obj=record)
+    del form.equipment
+
+    if form.validate_on_submit():
+        record.service_date = form.service_date.data
+        record.service_type = form.service_type.data
+        record.notes = form.notes.data
+        db.session.commit()
+        flash('Запись об обслуживании обновлена.', 'success')
+        return redirect(url_for('main.service_list'))
+        
+    return render_template('service_form.html', title='Редактировать запись', form=form, equipment=record.equipment)
+
+@bp.route('/service/<int:id>/delete', methods=['POST'])
+@login_required
+@tech_or_admin_required 
+def delete_service_record(id):
+    record = ServiceHistory.query.get_or_404(id)
+    db.session.delete(record)
+    db.session.commit()
+    flash('Запись об обслуживании удалена.', 'success')
+    return redirect(url_for('main.service_list'))
