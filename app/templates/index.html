@@ -31,8 +31,14 @@
                     <a href="{{ url_for('main.equipment_detail', id=item.id) }}" class="btn btn-sm btn-info">Просмотр</a>
                     
                     {% if current_user.is_authenticated and current_user.is_admin() %}
-                        <a href="#" class="btn btn-sm btn-warning">Редакт.</a>
-                        <a href="#" class="btn btn-sm btn-danger">Удалить</a>
+                    <a href="{{ url_for('main.edit_equipment', id=item.id) }}" class="btn btn-sm btn-warning">Редакт.</a>
+                        <button type="button" class="btn btn-sm btn-danger" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#deleteModal"
+                        data-equipment-name="{{ item.name }}"
+                        data-delete-url="{{ url_for('main.delete_equipment', id=item.id) }}">
+                            Удалить
+                        </button>
                     {% endif %}
                     
                     {% if current_user.is_authenticated and (current_user.is_admin() or current_user.is_tech()) %}
@@ -49,5 +55,46 @@
         </tbody>
     </table>
 
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Удаление оборудования</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Вы уверены, что хотите удалить оборудование <strong id="equipmentNameToDelete"></strong>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+
+                    <form id="deleteForm" action="" method="POST" style="display: inline;">
+                        <input type="submit" class="btn btn-danger" value="Да">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var deleteModal = document.getElementById('deleteModal');
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+
+                var button = event.relatedTarget;
+
+                var equipmentName = button.getAttribute('data-equipment-name');
+                var deleteUrl = button.getAttribute('data-delete-url');
+
+                var modalBodyName = deleteModal.querySelector('#equipmentNameToDelete');
+                var deleteForm = deleteModal.querySelector('#deleteForm');
+
+                modalBodyName.textContent = '"' + equipmentName + '"';
+                deleteForm.action = deleteUrl;
+            });
+        });
+    </script>
+    {% endblock %}
 
 {% endblock %}

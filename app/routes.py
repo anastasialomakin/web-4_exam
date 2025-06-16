@@ -128,3 +128,71 @@ def add_equipment():
 @bp.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
+
+@bp.route('/equipment/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required 
+def edit_equipment(id):
+    equipment_item = Equipment.query.get_or_404(id)
+    form = EquipmentForm(original_inventory_number=equipment_item.inventory_number)
+    form.category.choices = [(c.id, c.name) for c in Category.query.order_by('name').all()]
+
+    if form.validate_on_submit():
+        equipment_item.name = form.name.data
+        equipment_item.inventory_number = form.inventory_number.data
+        equipment_item.category_id = form.category.data
+        equipment_item.purchase_date = form.purchase_date.data
+        equipment_item.cost = form.cost.data
+        equipment_item.status = form.status.data
+        equipment_item.notes = form.notes.data
+        equipment_item.responsible_persons = form.responsible_persons.data
+
+        if form.photo.data:
+            try:
+                image_obj = save_picture(form.photo.data)
+                equipment_item.image_id = image_obj.id
+            except Exception as e:
+                flash(f'При сохранении файла возникла ошибка: {e}', 'danger')
+                db.session.rollback()
+                return render_template('equipment_form.html', title='Редактирование оборудования', form=form, equipment=equipment_item)
+
+        db.session.commit()
+        flash('Данные об оборудовании успешно обновлены!', 'success')
+        return redirect(url_for('main.equipment_detail', id=equipment_item.id))
+
+    elif request.method == 'GET':
+        form.name.data = equipment_item.name
+        form.inventory_number.data = equipment_item.inventory_number
+        form.category.data = equipment_item.category_id
+        form.purchase_date.data = equipment_item.purchase_date
+        form.cost.data = equipment_item.cost
+        form.status.data = equipment_item.status
+        form.notes.data = equipment_item.notes
+        form.responsible_persons.data = equipment_item.responsible_persons
+
+    return render_template('equipment_form.html', title='Редактирование оборудования', form=form, equipment=equipment_item)
+
+@bp.route('/equipment/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_equipment(id):
+    equipment_to_delete = Equipment.query.get_or_404(id)
+    image_to_check = equipment_to_delete.photo
+    db.session.delete(equipment_to_delete)
+    
+    if image_to_check:
+        other_equipment_with_same_image = Equipment.query.filter_by(image_id=image_to_check.id).first()
+        if not other_equipment_with_same_image:
+            try:
+                image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_to_check.filename)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+                db.session.delete(image_to_check)
+            except Exception as e:
+                flash(f'Ошибка при удалении файла изображения: {e}', 'danger')
+                db.session.rollback()
+                return redirect(url_for('main.index'))
+
+    db.session.commit()
+    flash('Оборудование успешно удалено.', 'success')
+    return redirect(url_for('main.index'))

@@ -42,7 +42,14 @@ class EquipmentForm(FlaskForm):
     ])
     submit = SubmitField('Сохранить')
 
+    def __init__(self, original_inventory_number=None, *args, **kwargs):
+        super(EquipmentForm, self).__init__(*args, **kwargs)
+        self.original_inventory_number = original_inventory_number
+
     def validate_inventory_number(self, inventory_number):
+        if inventory_number.data == self.original_inventory_number:
+            return
+        
         equipment = Equipment.query.filter_by(inventory_number=inventory_number.data).first()
         if equipment:
             raise ValidationError('Оборудование с таким инвентарным номером уже существует.')
