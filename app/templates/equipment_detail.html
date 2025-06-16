@@ -5,8 +5,11 @@
 {% block content %}
 <div class="row">
     <div class="col-md-4">
-
+        {% if equipment.photo %}
+        <img src="{{ url_for('main.uploaded_file', filename=equipment.photo.filename) }}" class="img-fluid rounded" alt="Фото {{ equipment.name }}">
+    {% else %}
         <img src="https://via.placeholder.com/300x300.png?text=Нет+фото" class="img-fluid rounded" alt="Фото оборудования">
+    {% endif %}
     </div>
 
     <div class="col-md-8">

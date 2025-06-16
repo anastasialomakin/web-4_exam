@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="text-center">{{ title }}</h1>
+
+        <form method="POST" action="" enctype="multipart/form-data" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control", size=32) }}
+                {% for error in form.name.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.inventory_number.label(class="form-label") }}
+                {{ form.inventory_number(class="form-control", size=32) }}
+                {% for error in form.inventory_number.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.category.label(class="form-label") }}
+                {{ form.category(class="form-select") }}
+                {% for error in form.category.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.purchase_date.label(class="form-label") }}
+                {{ form.purchase_date(class="form-control") }}
+                {% for error in form.purchase_date.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.cost.label(class="form-label") }}
+                {{ form.cost(class="form-control") }}
+                {% for error in form.cost.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.status.label(class="form-label d-block") }}
+                {% for subfield in form.status %}
+                    <div class="form-check form-check-inline">
+                        {{ subfield(class="form-check-input") }}
+                        {{ subfield.label(class="form-check-label") }}
+                    </div>
+                {% endfor %}
+                {% for error in form.status.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.responsible_persons.label(class="form-label") }}
+                {{ form.responsible_persons(class="form-select", size=5) }}
+                <div class="form-text">Зажмите Ctrl, чтобы выбрать несколько человек.</div>
+                {% for error in form.responsible_persons.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+
+             <div class="mb-3">
+                {{ form.photo.label(class="form-label") }}
+                {{ form.photo(class="form-control") }}
+                {% for error in form.photo.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.notes.label(class="form-label") }}
+                {{ form.notes(class="form-control", rows=4) }}
+                {% for error in form.notes.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
